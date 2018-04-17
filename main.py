@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template
+from flask import Flask, request, redirect, render_template, flash
 from flask_sqlalchemy import SQLAlchemy
 # Note: the connection string after :// contains the following info:
 # user:password@server:portNumber/databaseName
@@ -10,6 +10,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://build-a-blog:buildablog
 
 app.config['SQLALCHEMY_ECHO'] = True
 
+app.secret_key = 'Aq0ZrF8r/3fX R~XHH6jmN]L7X/,J?RU'
+
 db = SQLAlchemy(app)
 
 
@@ -19,20 +21,43 @@ class Blog(db.Model):
     title = db.Column(db.String(120))
     body = db.Column(db.Text)
 
-    def __init__(self, name):
-        self.name = name
-        self.completed = False
+    def __init__(self, title, body):
+        self.title = title
+        self.body = body
 
+def get_blog_entries():
+    return Blog.query.all()
 
-@app.route('/', methods=['POST', 'GET'])
-def index():
+def get_blog_post(post_id):
+    return Blog.query.filter_by(id=post_id)
+
+@app.route('/newpost', methods=['POST', 'GET'])
+def add_blog():
 
     if request.method == 'POST':
         blog_title = request.form['title']
-        new_blog = Blog(task_name)
+        body = request.form['body']
+        
+        if blog_title == '' or body == '':
+            flash("Don't leave your title or body blank!", 'error')
+            return render_template('newpost.html', blog_title=blog_title, body=body)
+
+        new_blog = Blog(title=blog_title, body=body)
         db.session.add(new_blog)
         db.session.commit()
+        return redirect('/blog')
+    
+    return render_template('newpost.html', title='Build-A-Blog', blog=get_blog_entries())
 
+@app.route('/blog', methods = ['GET', 'POST'])
+def display_blog():
+
+    blog_entry_id = request.args.get('id')
+    if blog_entry_id: #this means we're using GET and we just want to display a single blog post
+        blog_post = get_blog_post(blog_entry_id)
+        return render_template('post.html', title = 'Build-A-Blog', blog=blog_post)
+    else: #otherwise, we're displaying all posts
+        return render_template('blog.html', title = 'Build-A-Blog', blog=get_blog_entries())
 
 
 #only run if we are running Python from main.py
