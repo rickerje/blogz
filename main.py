@@ -45,7 +45,10 @@ def add_blog():
         new_blog = Blog(title=blog_title, body=body)
         db.session.add(new_blog)
         db.session.commit()
-        return redirect('/blog')
+        #redirect user to page displaying blog post they just created
+        blog_id = new_blog.id
+        url = "/blog?id=" + str(blog_id)
+        return redirect(url)
     
     return render_template('newpost.html', title='Build-A-Blog', blog=get_blog_entries())
 
