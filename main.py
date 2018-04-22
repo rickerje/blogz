@@ -37,6 +37,9 @@ class User(db.Model):
         self.username = username
         self.password = password
 
+def get_user_blogs(owner_id):
+    return Blog.query.filter_by(owner_id=owner_id).all()
+    
 def get_blog_entries():
     return Blog.query.all()
 
@@ -63,6 +66,32 @@ def require_login():
     if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
 
+@app.route('/blog', methods = ['GET'])
+def display_blog():
+
+        username=request.args.get('user') #someone clicked on a username
+        blog_entry_id = request.args.get('id') #someone clicked on a blog title
+
+        if username: #we're displaying all posts by one user
+            user = User.query.filter_by(username=username).first()
+            userID = user.id
+            blogs = Blog.query.filter_by(owner_id=userID).all()
+            this_title = "Posts by " + user.username
+            return render_template('display_user_posts.html', title = this_title, blog=blogs, user=user)
+
+        elif blog_entry_id: #this means we're using GET and we just want to display a single blog post
+            blog_entry_id = int(blog_entry_id)
+            print("blog_entry_id = " + str(blog_entry_id))
+            blog_post = Blog.query.filter_by(id=blog_entry_id).first()
+            print("blog_post.owner_id = " + str(blog_post.owner_id))
+            thisUser=User.query.filter_by(id=blog_post.owner_id).first()
+            print("User is " + str(thisUser))
+            return render_template('post.html', title = blog_post.title, blog=blog_post.body, user=thisUser.username)
+
+        else: #otherwise, we're displaying all posts by all users when someone clicks Display all Posts
+            return render_template('blog.html', title='All Blog Posts', blog=get_blog_entries(), users=User.query.all())
+
+
 @app.route('/login', methods = ['POST', 'GET'])
 def login():
 
@@ -87,7 +116,6 @@ def login():
 
     
     return render_template('login.html')
-
 
 
 @app.route('/signup', methods = ['POST', 'GET'])
@@ -123,70 +151,6 @@ def logout():
     del session['username']
     return redirect("/")
 
-"""
-def verify_user():
-    
-    #request variable values from form
-    username = request.form['username']
-    password = request.form['password']
-    verify_password = request.form['verify-password']
-    
-    #if we need to return input field values to form
-    def_username = username
-
-    #empty strings for returning error messages if needed
-    username_error = ''
-    password_error = ''
-    verify_password_error = ''
-    error_message = 'Your subnmission had the following errors:\n'
-    
-    len_username = len(username)
-    
-    #test username for valid entry
-    if username == '' or username.strip() == '':
-        error = True
-        username_error = "Please enter a username\n"
-        error_message = error_message + username_error
-    elif len_username <= 2:
-        error = True
-        username_error = "Username must be 3 or more characters.\n"
-        error_message = error_message + username_error
-
-    else:
-        for char in username:
-            if char == " ":
-                error = True
-                username_error = "Username cannot have spaces.\n"
-                error_message = error_message + username_error
-    
-    #test password and verify_password for correctness
-    if password == '' or password.strip() == '':
-        error = True
-        password_error = "Please enter a password.\n"
-        error_message = error_message + password_error
-
-    if verify_password == '' or verify_password.strip() == '':
-        error = True
-        verify_password_error = "Please enter a password.\n"
-        error_message = error_message + verify_password_error
-    
-    if not password == verify_password:
-        error = True
-        verify_password_error = "Password does not match.\n"
-        error_message = error_message + verify_password_error
-
-    if error:
-        return (True, error_message)
-        render_template("signup.html", 
-            username=username,
-            username_error = username_error, 
-            password_error = password_error, 
-            verify_password_error = verify_password_error,
-            def_username=def_username,            
-    else:
-        return (False, None)
-"""
-
 @app.route('/newpost', methods=['POST', 'GET'])
 def add_blog():
 
@@ -209,16 +173,9 @@ def add_blog():
     
     return render_template('newpost.html', title='Build-A-Blog', blog=get_blog_entries())
 
-@app.route('/blog', methods = ['GET', 'POST'])
-def display_blog():
-
-    blog_entry_id = request.args.get('id')
-    if blog_entry_id: #this means we're using GET and we just want to display a single blog post
-        blog_post = get_blog_post(blog_entry_id)
-        return render_template('post.html', title = 'Build-A-Blog', blog=blog_post)
-    else: #otherwise, we're displaying all posts
-        return render_template('blog.html', title = 'Build-A-Blog', blog=get_blog_entries())
-
+@app.route('/', methods = ['GET', 'POST'])
+def index():
+    return render_template('index.html', users=User.query.all())
 
 #only run if we are running Python from main.py
 if __name__ == '__main__':

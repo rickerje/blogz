@@ -9,9 +9,14 @@
     {% else %}
 
         {% for entry in blog %}
-        <h3><a href="/blog?id={{entry.id}}">{{entry.title}}</a></h3>
-        <p>{{entry.body}}</p>
-        <hr />
+            {% for user in users %}
+                {% if entry.owner_id == user.id %}
+                <h3><a href="/blog?id={{entry.id}}">{{entry.title}}</a></h3>
+                <p>{{entry.body}}</p>
+                <h6>written by <a href="/blog?user={{user.username}}">{{user.username}}</a></h6>
+                {% endif %}
+            {% endfor %}
+            <hr />
         {% endfor %}
 
     {% endif %}

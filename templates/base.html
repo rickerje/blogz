@@ -11,7 +11,7 @@
 <body>
     <div style='float: right'>
         {% if 'username' in session %}
-          {{ session['user'] }}
+          <p>{{ session['user'] }}</p>
           <form action="/logout" method="post">
             <input type="submit" value="Log Out" />
           </form>
@@ -19,7 +19,7 @@
           <a href="login">login</a> | <a href="signup">sign up</a>
         {% endif %}
       </div>
-  <p><a href = "/blog">Blog Page</a>&nbsp; &nbsp; <a href="/newpost">Add a New Entry</a></p>
+  <p><a href="/">Home</a>&nbsp;&nbsp;<a href = "/blog">Display All Posts</a>&nbsp; &nbsp; <a href="/newpost">Add a New Entry</a></p>
 
     {% with messages = get_flashed_messages(with_categories=True) %}
     <ul>

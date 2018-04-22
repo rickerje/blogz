@@ -2,10 +2,8 @@
 
 {% block content %}
 
-{% for entry in blog %}
-    <h2>{{entry.title}}</h2>
-    <p>{{entry.body}}</p>
-{% endfor %}
-
+    <h2>{{title}}</h2>
+    <p>{{blog}}</p>
+    <h6>written by <a href="/blog?user={{user}}">{{user}}</a></h6>
 
 {% endblock %}
