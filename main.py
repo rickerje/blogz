@@ -59,6 +59,16 @@ def verify_username(username):
             return False
     return True
 
+def verify_password(password):
+    if password == '' or password.strip == '':
+        flash("Please enter a password.", "error")
+        return False
+    for char in password:
+        if char == " ":
+            flash("Password cannot have spaces.", "error")
+            return False
+    return True
+
 @app.before_request
 def require_login():
     allowed_routes = ['display_blog','login', 'signup', 'index'] #let users see these pages if not logged in
@@ -129,20 +139,22 @@ def signup():
         # todo: validate data, use user signup code
         if not verify_username(username):
             return render_template("signup.html")
-        
-        if password != verify:
+        elif not verify_password(password):
+            return render_template("signup.html")
+        elif password != verify:
             flash("Passwords do not match.", "error")
             return render_template("signup.html")
-        # check that user does not already exist:
-        existing_user = User.query.filter_by(username=username).first() #if no user, equals NONE
-        if not existing_user:
-            new_user = User(username, password)
-            db.session.add(new_user)
-            db.session.commit()
-            session['username'] = username
-            return redirect('/blog')
         else:
-            flash("That user already exists.", "error")
+            # check that user does not already exist:
+            existing_user = User.query.filter_by(username=username).first() #if no user, equals NONE
+            if not existing_user:
+                new_user = User(username, password)
+                db.session.add(new_user)
+                db.session.commit()
+                session['username'] = username
+                return redirect('/blog')
+            else:
+                flash("That user already exists.", "error")
 
     return render_template('signup.html')
 
