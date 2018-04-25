@@ -1,41 +1,7 @@
-from flask import Flask, request, redirect, render_template, flash, session
-from flask_sqlalchemy import SQLAlchemy
-# Note: the connection string after :// contains the following info:
-# user:password@server:portNumber/databaseName
-
-app = Flask(__name__)
-app.config['DEBUG'] = True
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:blogz@localhost:8889/blogz'
-app.config['SQLALCHEMY_ECHO'] = True
-
-app.secret_key = 'Aq0ZrF8r/3fX R~XHH6jmN]L7X/,J?RU'
-
-db = SQLAlchemy(app)
-
-
-class Blog(db.Model):
-
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120))
-    body = db.Column(db.Text)
-    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-    def __init__(self, title, body, owner):
-        self.title = title
-        self.body = body
-        self.owner = owner
-
-class User(db.Model):
-
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(120))
-    password = db.Column(db.String(120))
-    blogs = db.relationship('Blog', backref='owner')
-
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
+from flask import request, redirect, render_template, flash, session
+from models import User, Blog
+from app import app, db
+from hashutils import check_pw_hash
 
 def get_user_blogs(owner_id):
     return Blog.query.filter_by(owner_id=owner_id).all()
@@ -71,7 +37,7 @@ def verify_password(password):
 
 @app.before_request
 def require_login():
-    allowed_routes = ['display_blog','login', 'signup', 'index'] #let users see these pages if not logged in
+    allowed_routes = ['display_blog','login', 'signup', 'index', 'static'] #let users see these pages if not logged in
     print(request.endpoint)
     if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
@@ -117,7 +83,7 @@ def login():
         if not user:
             flash("Username does not exist.", "error")
             return redirect('/login')
-        if user and user.password == password:
+        if user and check_pw_hash(password, user.pw_hash):
             session['username'] = username
             flash("Logged in")
             return redirect('/newpost')

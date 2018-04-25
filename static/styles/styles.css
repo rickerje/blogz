@@ -1,0 +1,20 @@
+* {
+    font-family: Roboto, Helvetica, sans-serif;
+}
+body {
+    background-color: #009933;
+}    
+
+.error {
+    color: red;
+}
+.main {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 75%;
+    max-width: 1024px;
+    background-color: #FAFAD2;
+    padding: 10px;
+    overflow: auto;
+}

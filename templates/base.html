@@ -1,15 +1,15 @@
 <!doctype html>
 <html>
 <head>
-    <title>{{title}}</title>
-    <style>
-        .error {
-            color: red;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/styles.css') }}">
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/normalize.css') }}">
+  <title>{{title}}</title>
 </head>
+
 <body>
-    <div style='float: right'>
+    <div class="main">
+      <div style='float: right'>
         {% if 'username' in session %}
           <p>{{ session['user'] }}</p>
           <form action="/logout" method="post">
@@ -31,6 +31,6 @@
 
     {% block content %}
     {% endblock %}
-
+    </div>
 </body>
 </html>
